@@ -1,0 +1,37 @@
+<UserControl x:Class="DiveCenterManager.Views.ScheduleView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:conv="clr-namespace:DiveCenterManager.Converters">
+  <UserControl.Resources><conv:StatusBrushConverter x:Key="StatusBrush"/><conv:TimeOfDayConverter x:Key="TimeOfDay"/></UserControl.Resources>
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top">
+      <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitle}"/><TextBlock Text="{Binding Subtitle}" Style="{StaticResource Subtitle}"/>
+      <Border Style="{StaticResource Card}" Margin="0,0,0,16" Padding="16,12,0,4"><DockPanel>
+        <Button DockPanel.Dock="Right" Content="Apply" Command="{Binding RefreshCommand}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+        <ItemsControl ItemsSource="{Binding Filters}" ItemTemplate="{StaticResource FieldTemplate}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel><ItemsControl.ItemContainerStyle><Style TargetType="ContentPresenter"><Setter Property="Width" Value="210"/></Style></ItemsControl.ItemContainerStyle></ItemsControl>
+      </DockPanel></Border>
+      <WrapPanel><ItemsControl ItemsSource="{Binding Actions}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel><ItemsControl.ItemTemplate><DataTemplate><Button Content="{Binding Label}" Command="{Binding Command}"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl><Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButton}"/></WrapPanel>
+      <TextBlock Text="{Binding Message}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap" Margin="0,4,0,8"/>
+      <ItemsControl ItemsSource="{Binding Cards}" Margin="0,6,0,12"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel><ItemsControl.ItemTemplate><DataTemplate><StackPanel Orientation="Horizontal" Margin="0,0,24,0"><TextBlock Text="{Binding Value}" FontWeight="SemiBold" Margin="0,0,6,0"/><TextBlock Text="{Binding Label}" Foreground="{StaticResource MutedBrush}"/></StackPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+      <ItemsControl ItemsSource="{Binding Days}" Margin="0,0,0,12" Visibility="{Binding IsWeekView, Converter={StaticResource BoolVisibility}}">
+        <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="7"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate><DataTemplate><Button Command="{Binding SelectCommand}" Style="{StaticResource SecondaryButton}" Padding="10,12" HorizontalContentAlignment="Left" ToolTip="Open this day">
+          <StackPanel><TextBlock Text="{Binding Heading}" FontWeight="SemiBold"/><TextBlock Text="{Binding Summary}" TextWrapping="Wrap" FontSize="11" Margin="0,7,0,0"/></StackPanel>
+        </Button></DataTemplate></ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
+    <TextBlock DockPanel.Dock="Bottom" Text="{Binding ResultCount}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,8,0,0"/>
+    <Grid>
+      <ListBox ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected, Mode=TwoWay}" Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" MouseDoubleClick="Reservation_DoubleClick">
+        <ListBox.InputBindings><KeyBinding Key="Enter" Command="{Binding OpenReservationCommand}"/></ListBox.InputBindings>
+        <ListBox.GroupStyle><GroupStyle><GroupStyle.HeaderTemplate><DataTemplate><TextBlock Text="{Binding Name, StringFormat={}{0:dddd, dd MMMM yyyy}}" FontSize="18" FontWeight="SemiBold" Margin="0,16,0,12"/></DataTemplate></GroupStyle.HeaderTemplate></GroupStyle></ListBox.GroupStyle>
+        <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Margin" Value="0,0,0,10"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem"><Border x:Name="Card" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="18"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsSelected" Value="True"><Setter TargetName="Card" Property="Background" Value="#E9F4F7"/><Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource BlueBrush}"/></Trigger><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style></ListBox.ItemContainerStyle>
+        <ListBox.ItemTemplate><DataTemplate><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition/><ColumnDefinition Width="135"/></Grid.ColumnDefinitions>
+          <TextBlock Text="{Binding StartTime, Converter={StaticResource TimeOfDay}}" FontSize="25" FontWeight="SemiBold" Foreground="{StaticResource BlueBrush}" VerticalAlignment="Center"/>
+          <StackPanel Grid.Column="1"><TextBlock Text="{Binding Activity.Name}" FontSize="18" FontWeight="SemiBold"/><WrapPanel Margin="0,8,0,0"><TextBlock Text="{Binding NumberOfParticipants, StringFormat={}{0} participants}" Margin="0,0,20,6"/><TextBlock Margin="0,0,20,6"><Run Text="Instructor: "/><Run Text="{Binding Instructor.FullName, Mode=OneWay, TargetNullValue=Unassigned, FallbackValue=Unassigned}"/></TextBlock><TextBlock Margin="0,0,20,6"><Run Text="Site: "/><Run Text="{Binding DiveSite.Name, Mode=OneWay, TargetNullValue=Unassigned, FallbackValue=Unassigned}"/></TextBlock><TextBlock Margin="0,0,20,6"><Run Text="Boat: "/><Run Text="{Binding Boat.Name, Mode=OneWay, TargetNullValue=No boat, FallbackValue=No boat}"/></TextBlock></WrapPanel><TextBlock Text="{Binding ReservationNumber}" Foreground="{StaticResource MutedBrush}" FontSize="12"/></StackPanel>
+          <TextBlock Grid.Column="2" Text="{Binding Status}" Foreground="{Binding Status, Converter={StaticResource StatusBrush}}" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+        </Grid></DataTemplate></ListBox.ItemTemplate>
+      </ListBox>
+      <Border Background="{StaticResource BackgroundBrush}" Visibility="{Binding IsEmpty, Converter={StaticResource BoolVisibility}}"><TextBlock Text="No reservations in this period." Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/></Border>
+    </Grid>
+  </DockPanel>
+</UserControl>
+
+
